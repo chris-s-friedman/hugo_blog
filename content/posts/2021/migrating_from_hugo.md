@@ -1,7 +1,7 @@
 ---
 title: "Migrating from a Hugo site to... Hugo?"
 date: 2021-09-02T22:29:51-04:00
-draft: true
+draft: false
 type: "post"
 slug: "migrating-from-hugo"
 ---
