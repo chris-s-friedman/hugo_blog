@@ -1,0 +1,125 @@
+---
+title: Getting RateBeer Data…Programmatically
+author: ''
+date: '2017-12-07'
+slug: getting-ratebeer-data-programmatically
+categories:
+  - beer
+  - data_collection
+tags:
+  - API
+  - beer
+  - data_collection
+  - httr
+  - jsonlite
+  - r
+  - ratebeer
+  - scraping
+  - rvest
+type: post
+---
+
+
+
+<p>In my <a href="../collecting-beer-data-using-ratebeer">last post</a> I showed how using the package <code>httr</code>, You can access the RateBeer API to get information about beers made by a brewery. When I left off, I showed a problem - the API only shows 10 beers at a time.</p>
+<p>Today, I’m going to show how we can get more beers at once. After that, I’m going to show how we can use the API, <code>rvest</code>, and <code>purrr</code> to get beers from all the brewers around me.</p>
+<div id="updating-the-call-to-the-api" class="section level2">
+<h2>Updating the call to the API</h2>
+<div id="setting-the-first-argument" class="section level3">
+<h3>Setting the <code>first:</code> argument</h3>
+<p>In the last post, I didn’t mention one of the arguments that can be used when making <code>beersByBrewer</code> query. Besides the argument for the brewerID, we can also use the <code>first</code> argument to specify how many beers we want to see from a brewer. As you will see below, one of the changes I make to the call to the API includes seting the value for the argument <code>first</code> to <code>999</code>.</p>
+<p>Ninety-nine beers on the wall? Let’s make it Nine hundred and ninety-nine.</p>
+</div>
+<div id="turning-the-call-to-the-api-into-a-function." class="section level3">
+<h3>Turning the call to the API into a function.</h3>
+<p>As you will see later on, it will be handy to have the call to the API as a function. Below, I declare that function:</p>
+<pre class="r"><code>get_beers_from_brewer &lt;- function(brewer_id, api_key) {
+  URL &lt;- &quot;https://api.ratebeer.com/v1/api/graphql&quot;
+  POST(URL,
+       body = list(
+         query = paste0(
+&quot;query{
+  beersByBrewer(brewerId: &quot;, brewer_id, &quot;, first: 999) {
+    totalCount
+      items{
+        name
+        abv
+        averageRating
+        ratingCount
+        isRetired
+        style{
+          name
+        }
+        brewer {
+          id
+          name
+          streetAddress
+          city
+          state {
+            name
+          }
+          zip
+        }
+      }
+     }
+}&quot;),
+       variables = &quot;{}&quot;, 
+       operationName = NULL),
+       encode = &quot;json&quot;, # tells httr to encode the body of the request as json
+       add_headers(&quot;content-type&quot; = &quot;application/json&quot;, 
+                   &quot;Accept&quot; = &quot;application/json&quot;, 
+                   &quot;x-api-key&quot; = api_key))
+}</code></pre>
+</div>
+</div>
+<div id="finding-breweries" class="section level2">
+<h2>Finding Breweries</h2>
+<p>Okay, so now, I have an easy way to get information about the beers that breweries make. All I need to do now is point the API to the brewer ID of each brewery I want information on.</p>
+<p>Remember, the brewer id can be found by looking at the url for that brewery and is in the form:</p>
+<p><code>https://www.ratebeer.com/brewers/&lt;BREWERY_NAME_HERE&gt;/&lt;BREWER_ID_HERE&gt;</code></p>
+<p>The thing is, I like data and want A LOT of it. There’s no way I’m going to hand sort through urls to try to find breweries. Can’t this be automated?</p>
+<p>YES!</p>
+<p>RateBeer maintains lists of breweries by state. For example, the breweries in Pennsylvania can be found <a href="https://www.ratebeer.com/breweries/pennsylvania/38/213/">here</a>. Using the package <a href="https://github.com/hadley/rvest"><code>rvest</code></a>, we can pull information about all of the breweries in the state, and then use <a href="https://github.com/tidyverse/purrr"><code>purrr</code></a> to iterate over that list, using the function, <code>get_beers_from_brewer()</code>.</p>
+<p><code>rvest</code> is a package to make harvesting information from the web easy. Below, you see how, in three steps, I have a list of urls that point to all of the breweries in the state.</p>
+<pre class="r"><code>library(rvest)
+
+brewery_list_url &lt;- &quot;https://www.ratebeer.com/breweries/pennsylvania/38/213/&quot;
+
+brewery_ids &lt;-  read_html(brewery_list_url) %&gt;% 
+  html_nodes(&quot;#brewerTable a:nth-child(1)&quot;) %&gt;% 
+  html_attr(&#39;href&#39;)</code></pre>
+<p>To explain what happened in the previous code chunk:</p>
+<ol style="list-style-type: decimal">
+<li><code>read_html()</code> loads the url for the list of breweris in PA. This is the same thing that happens if you click this <a href="https://www.ratebeer.com/breweries/pennsylvania/38/213/">link</a>.</li>
+<li><code>html_nodes()</code> searches for every place in the html file we navigated to that has a link to a brewery. The text in the argument for the function points to the css selector for where breweries can be found on the page. I found this selector using <a href="http://selectorgadget.com/">selectorgadget</a>. This function gives me a list of the each time that selector shows up.</li>
+<li><code>html_attr()</code> searches that list for an attribute of the specified type. In this case I specified a hyperlink.</li>
+</ol>
+<p>As I said, this outputs a list of urls. As an example, the url for Yards Brewing looks like this:</p>
+<blockquote>
+<p><code>/brewers/yards-brewing-company/166/</code></p>
+</blockquote>
+<p>Now, I can take this list of urls, and use the function <code>purrr::map_chr()</code> to get a list of brewer IDs. As a note, I use <code>map_chr</code> because it flattens the list of IDs into a single character vector. I highly suggest that you check out the rest of the <code>map_*</code> functions.</p>
+<p>Below, I take each item in the list of urls, split each url at any <code>&quot;/&quot;</code> and then use <code>map_chr()</code> to select the fourth element, the brewer ID.</p>
+<pre class="r"><code>brewery_ids &lt;- brewery_ids %&gt;% 
+  strsplit(&quot;/&quot;) %&gt;% 
+  map_chr(4)</code></pre>
+<p>Now I have a list of brewery IDs that I can feed into <code>get_beers_from_brewer()</code></p>
+</div>
+<div id="getting-all-the-beers" class="section level2">
+<h2>Getting ALL THE BEERS!</h2>
+<p>To iterate through the list, we’ll use <code>map()</code> and some functions from <code>jsonlite</code>, a package that can parse JSON. Then we’ll use <code>map()</code> to work through the levels of the response, from it’s highest level (“data”) down to the actual data frame (held in the named object, “items”).</p>
+<pre class="r"><code>brewery_beer_df &lt;- brewery_ids %&gt;% 
+  map(function(brewer_id){
+    Sys.sleep(1) # the API restricts to 1 request per second. 
+    get_beers_from_brewer(brewer_id, API_key)
+  }) %&gt;% 
+  # Here we use jsonlite functions to turn the response of the request into
+  # json 
+  map(content, type = &quot;text&quot;) %&gt;% 
+  # and then turn that into an r object which has dfs in it from each
+  # brewery.
+  map(fromJSON, flatten = TRUE) %&gt;%
+  # working down through the response levels.
+  map(&quot;data&quot;) %&gt;% map(&quot;beersByBrewer&quot;) %&gt;% map_dfr(&quot;items&quot;)</code></pre>
+<p>The object <code>brewery_beer_df</code> is the data frame with all the beers from breweries we requested.</p>
+</div>

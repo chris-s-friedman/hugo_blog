@@ -1,0 +1,520 @@
+---
+title: More SQL - Rocking Out
+author: ''
+date: '2019-08-10'
+slug: more-sql-rocking-out
+categories:
+  - sql
+tags:
+  - sql
+keywords:
+  - tech
+type: post
+---
+
+
+
+<p>I’ve been playing around with the data science projects from codeacademy for a few weeks. First I played with stocks data <a href="../../07/creating-a-stocks-database/">here</a> and <a href="../../07/working-with-stocks-basic-sql">here</a>.</p>
+<p>Today, I’ll be working through the second [codeacademy data science independant project: Watching the Stock Market]</p>
+<p>This is a continuation of my work on the <a href="https://discuss.codecademy.com/t/data-science-independent-project-2-explore-a-sample-database/419945">codeacademy data science independant project #2: Explore a Sample Database</a>.</p>
+<p>The database for this project is related to a fictional music store. As you can see in the diagram of the image below, it’s a little more complicated than the single table stocks database!</p>
+<div class="figure">
+<img src="/post/2019-08-10-more-sql-rocking-out_files/sqlite-sample-database-color.jpg" alt="database diagram" />
+<p class="caption">database diagram</p>
+</div>
+<p>Like the last project, this one is broken up into a sets of challenges. In an upcoming post, I’ll examine the intermediate and advanced challenges</p>
+<pre class="r"><code>library(DBI)
+db = dbConnect(RSQLite::SQLite(), dbname = &quot;../../data/Music Store - Chinook/chinook.db&quot;)</code></pre>
+<div id="basic-challenges" class="section level1">
+<h1>Basic Challenges</h1>
+<div id="which-tracks-appeared-in-the-most-playlists-how-many-playlist-did-they-appear-in" class="section level2">
+<h2>1. Which tracks appeared in the most playlists? How many playlist did they appear in?</h2>
+<pre class="sql"><code>   SELECT track_list.TrackId,
+          name,
+          -- compute how many playlists each track is in
+          COUNT(track_list.TrackId) AS playlist_count
+     FROM playlist_track AS track_list
+LEFT JOIN tracks
+       ON track_list.TrackId = tracks.TrackId
+       GROUP BY track_list.TrackId
+   -- compare the count of each track to the max count
+   HAVING COUNT(track_list.TrackId) =
+          -- compute the max count here
+          (SELECT MAX(plist_counts.playlist_count)
+            FROM (SELECT TrackId, COUNT(*) AS playlist_count
+                    FROM playlist_track
+                GROUP BY TrackId) AS plist_counts)</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-1">Table 1: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="right">TrackId</th>
+<th align="left">Name</th>
+<th align="right">playlist_count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">3403</td>
+<td align="left">Intoitus: Adorate Deum</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="right">3404</td>
+<td align="left">Miserere mei, Deus</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="right">3408</td>
+<td align="left">Aria Mit 30 Veränderungen, BWV 988 “Goldberg Variations”: Aria</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="right">3409</td>
+<td align="left">Suite for Solo Cello No. 1 in G Major, BWV 1007: I. Prélude</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="right">3410</td>
+<td align="left">The Messiah: Behold, I Tell You a Mystery… The Trumpet Shall Sound</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="right">3411</td>
+<td align="left">Solomon HWV 67: The Arrival of the Queen of Sheba</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="right">3415</td>
+<td align="left">Symphony No.5 in C Minor: I. Allegro con brio</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="right">3416</td>
+<td align="left">Ave Maria</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="right">3417</td>
+<td align="left">Nabucco: Chorus, “Va, Pensiero, Sull’ali Dorate”</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="right">3418</td>
+<td align="left">Die Walküre: The Ride of the Valkyries</td>
+<td align="right">5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Putting this together required using two tables - playlist_track, which connects TrackId to PlaylistId and the tracks table, which has information about each song. The playlist_track table has a row for each track - playlist combination. By counting how many times a track shows up in this table, we get a count of how many playlists that track is in. Then if you filter the playlist_track table so that it only shows the tracks that show up the max number of times, you see the tracks that are in the most playlists. The last bit that needs to be done after that is to bring in the track name, as I did with the <code>LEFT JOIN</code>.</p>
+</div>
+<div id="which-track-generated-the-most-revenue-which-album-which-genre" class="section level2">
+<h2>2. Which track generated the most revenue? which album? which genre?</h2>
+<pre class="sql"><code>   SELECT invoice_items.TrackId, Name, SUM(invoice_items.UnitPrice * Quantity) AS track_revenue
+     FROM invoice_items
+LEFT JOIN tracks
+       ON invoice_items.TrackId = tracks.TrackId
+ GROUP BY invoice_items.TrackId
+ ORDER BY track_revenue DESC;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-2">Table 2: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="right">TrackId</th>
+<th align="left">Name</th>
+<th align="right">track_revenue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2832</td>
+<td align="left">The Woman King</td>
+<td align="right">3.98</td>
+</tr>
+<tr class="even">
+<td align="right">2850</td>
+<td align="left">The Fix</td>
+<td align="right">3.98</td>
+</tr>
+<tr class="odd">
+<td align="right">2868</td>
+<td align="left">Walkabout</td>
+<td align="right">3.98</td>
+</tr>
+<tr class="even">
+<td align="right">3177</td>
+<td align="left">Hot Girl</td>
+<td align="right">3.98</td>
+</tr>
+<tr class="odd">
+<td align="right">3200</td>
+<td align="left">Gay Witch Hunt</td>
+<td align="right">3.98</td>
+</tr>
+<tr class="even">
+<td align="right">3214</td>
+<td align="left">Phyllis’s Wedding</td>
+<td align="right">3.98</td>
+</tr>
+<tr class="odd">
+<td align="right">3223</td>
+<td align="left">How to Stop an Exploding Man</td>
+<td align="right">3.98</td>
+</tr>
+<tr class="even">
+<td align="right">3250</td>
+<td align="left">Pilot</td>
+<td align="right">3.98</td>
+</tr>
+<tr class="odd">
+<td align="right">2820</td>
+<td align="left">Occupation / Precipice</td>
+<td align="right">1.99</td>
+</tr>
+<tr class="even">
+<td align="right">2821</td>
+<td align="left">Exodus, Pt. 1</td>
+<td align="right">1.99</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>So we can see that the top 8 tracks above garnered the most revenue. I didn’t look these up, but I don’t recognize any of them ¯\<em>(ツ)</em>/¯.</p>
+<p>What about Albums? Which ALbum garnered the most revenue?</p>
+<pre class="sql"><code>   SELECT tracks.AlbumID, Title, SUM(invoice_items.UnitPrice * Quantity) AS album_revenue
+     FROM invoice_items
+LEFT JOIN tracks
+       ON invoice_items.TrackId = tracks.TrackId
+LEFT JOIN albums
+       ON tracks.AlbumID = albums.AlbumID
+ GROUP BY tracks.AlbumID
+ ORDER BY album_revenue DESC;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-3">Table 3: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="right">AlbumId</th>
+<th align="left">Title</th>
+<th align="right">album_revenue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">253</td>
+<td align="left">Battlestar Galactica (Classic), Season 1</td>
+<td align="right">35.82</td>
+</tr>
+<tr class="even">
+<td align="right">251</td>
+<td align="left">The Office, Season 3</td>
+<td align="right">31.84</td>
+</tr>
+<tr class="odd">
+<td align="right">23</td>
+<td align="left">Minha Historia</td>
+<td align="right">26.73</td>
+</tr>
+<tr class="even">
+<td align="right">228</td>
+<td align="left">Heroes, Season 1</td>
+<td align="right">25.87</td>
+</tr>
+<tr class="odd">
+<td align="right">231</td>
+<td align="left">Lost, Season 2</td>
+<td align="right">25.87</td>
+</tr>
+<tr class="even">
+<td align="right">141</td>
+<td align="left">Greatest Hits</td>
+<td align="right">25.74</td>
+</tr>
+<tr class="odd">
+<td align="right">73</td>
+<td align="left">Unplugged</td>
+<td align="right">24.75</td>
+</tr>
+<tr class="even">
+<td align="right">227</td>
+<td align="left">Battlestar Galactica, Season 3</td>
+<td align="right">23.88</td>
+</tr>
+<tr class="odd">
+<td align="right">229</td>
+<td align="left">Lost, Season 3</td>
+<td align="right">21.89</td>
+</tr>
+<tr class="even">
+<td align="right">224</td>
+<td align="left">Acústico</td>
+<td align="right">21.78</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The most revenue generating album? Looks like it isn’t even an album and more the first season of Battlestar Galactica!</p>
+<p>Now what about Genre?</p>
+<pre class="sql"><code>   SELECT tracks.GenreId,
+          genres.Name,
+          SUM(invoice_items.UnitPrice * Quantity) AS genre_revenue
+     FROM invoice_items
+LEFT JOIN tracks
+       ON invoice_items.TrackId = tracks.TrackId
+LEFT JOIN genres
+       ON tracks.GenreId = genres.GenreId
+ GROUP BY tracks.GenreId
+ ORDER BY genre_revenue DESC;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-4">Table 4: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="right">GenreId</th>
+<th align="left">Name</th>
+<th align="right">genre_revenue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">Rock</td>
+<td align="right">826.65</td>
+</tr>
+<tr class="even">
+<td align="right">7</td>
+<td align="left">Latin</td>
+<td align="right">382.14</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">Metal</td>
+<td align="right">261.36</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">Alternative &amp; Punk</td>
+<td align="right">241.56</td>
+</tr>
+<tr class="odd">
+<td align="right">19</td>
+<td align="left">TV Shows</td>
+<td align="right">93.53</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">Jazz</td>
+<td align="right">79.20</td>
+</tr>
+<tr class="odd">
+<td align="right">6</td>
+<td align="left">Blues</td>
+<td align="right">60.39</td>
+</tr>
+<tr class="even">
+<td align="right">21</td>
+<td align="left">Drama</td>
+<td align="right">57.71</td>
+</tr>
+<tr class="odd">
+<td align="right">14</td>
+<td align="left">R&amp;B/Soul</td>
+<td align="right">40.59</td>
+</tr>
+<tr class="even">
+<td align="right">24</td>
+<td align="left">Classical</td>
+<td align="right">40.59</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The most revenue generating? Rock!</p>
+</div>
+<div id="which-countries-have-the-highest-sales-revenue-what-percent-of-total-revenue-does-each-country-make-up" class="section level2">
+<h2>3. Which countries have the highest sales revenue? What percent of total revenue does each country make up?</h2>
+<p>In the last challenge, we examined how we can figure out which items in the database produce the most revenue and further which groups of items produce the most revenue. The conclusion from all of that being is that investing in more of those classes of items can produce more revenue.</p>
+<p>In this challenge we will use metadata about customers to examine where in the world (literally) the revenue comes from. As the challenge asks, what countries produce the most revenue? Importantly, we can get country daya from two different sources: customer country and billing country. I’m more curious about customer country, so we’ll go there.</p>
+<pre class="sql"><code>   SELECT country,
+          SUM(invoice_items.UnitPrice * Quantity) AS country_revenue,
+          ROUND(SUM(invoice_items.UnitPrice * Quantity) /
+                (SELECT SUM(invoice_items.UnitPrice * Quantity)
+                   FROM invoice_items) * 100,
+                2) AS percent_total_revenue
+     FROM invoice_items
+LEFT JOIN invoices
+       ON invoice_items.InvoiceId = invoices.InvoiceId
+LEFT JOIN customers
+       ON invoices.CustomerId = customers.CustomerId
+ GROUP BY country
+ ORDER BY country_revenue DESC;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-5">Table 5: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="left">Country</th>
+<th align="right">country_revenue</th>
+<th align="right">percent_total_revenue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">USA</td>
+<td align="right">523.06</td>
+<td align="right">22.46</td>
+</tr>
+<tr class="even">
+<td align="left">Canada</td>
+<td align="right">303.96</td>
+<td align="right">13.05</td>
+</tr>
+<tr class="odd">
+<td align="left">France</td>
+<td align="right">195.10</td>
+<td align="right">8.38</td>
+</tr>
+<tr class="even">
+<td align="left">Brazil</td>
+<td align="right">190.10</td>
+<td align="right">8.16</td>
+</tr>
+<tr class="odd">
+<td align="left">Germany</td>
+<td align="right">156.48</td>
+<td align="right">6.72</td>
+</tr>
+<tr class="even">
+<td align="left">United Kingdom</td>
+<td align="right">112.86</td>
+<td align="right">4.85</td>
+</tr>
+<tr class="odd">
+<td align="left">Czech Republic</td>
+<td align="right">90.24</td>
+<td align="right">3.88</td>
+</tr>
+<tr class="even">
+<td align="left">Portugal</td>
+<td align="right">77.24</td>
+<td align="right">3.32</td>
+</tr>
+<tr class="odd">
+<td align="left">India</td>
+<td align="right">75.26</td>
+<td align="right">3.23</td>
+</tr>
+<tr class="even">
+<td align="left">Chile</td>
+<td align="right">46.62</td>
+<td align="right">2.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Well, there you have it! The US generated the most revenue out of all the countries - $523.06, which is 22.46% of total revenue.</p>
+</div>
+<div id="how-many-customers-did-each-employee-support-what-is-the-average-revenue-for-each-sale-and-what-is-their-total-sale" class="section level2">
+<h2>4. How many customers did each employee support, what is the average revenue for each sale, and what is their total sale?</h2>
+<p>With this question, we are trying to get at how personnel impact revenue.</p>
+<p>How do employees interact with customers? How many customers is each employee helping?</p>
+<pre class="sql"><code>   SELECT employees.FirstName,
+          employees.LastName,
+          COUNT(*) AS customers_helped
+     FROM customers
+LEFT JOIN employees
+       ON customers.SupportRepId = employees.EmployeeId
+ GROUP BY SupportRepId</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-6">Table 6: </span>3 records</caption>
+<thead>
+<tr class="header">
+<th align="left">FirstName</th>
+<th align="left">LastName</th>
+<th align="right">customers_helped</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Jane</td>
+<td align="left">Peacock</td>
+<td align="right">21</td>
+</tr>
+<tr class="even">
+<td align="left">Margaret</td>
+<td align="left">Park</td>
+<td align="right">20</td>
+</tr>
+<tr class="odd">
+<td align="left">Steve</td>
+<td align="left">Johnson</td>
+<td align="right">18</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Well, looks like they all help customers just about the same amount.</p>
+<p>Okay, so now we know how customers are helped by the sales team, but how much do customers spend on average?</p>
+<pre class="sql"><code>   SELECT AVG(Total) AS average_sale
+     FROM invoices</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-7">Table 7: </span>1 records</caption>
+<thead>
+<tr class="header">
+<th align="left">average_sale</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">5.65194174757282</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>So now that we know how many customers each sales rep helps and the average amount of money a customer spends in a single session, how much revenue is each employee responsible for?</p>
+<pre class="sql"><code>   SELECT employees.FirstName,
+          employees.LastName,
+          SUM(invoices.Total) AS total_revenue
+     FROM invoices
+LEFT JOIN customers
+       ON invoices.CustomerId = customers.CustomerId
+LEFT JOIN employees
+       ON customers.SupportRepId = employees.EmployeeId
+ GROUP BY customers.SupportRepId</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-8">Table 8: </span>3 records</caption>
+<thead>
+<tr class="header">
+<th align="left">FirstName</th>
+<th align="left">LastName</th>
+<th align="right">total_revenue</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Jane</td>
+<td align="left">Peacock</td>
+<td align="right">833.04</td>
+</tr>
+<tr class="even">
+<td align="left">Margaret</td>
+<td align="left">Park</td>
+<td align="right">775.40</td>
+</tr>
+<tr class="odd">
+<td align="left">Steve</td>
+<td align="left">Johnson</td>
+<td align="right">720.16</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Well this just goes to show that interacting with more customers is at least related to total revenue generated by an employee. That said, with an N of 3, you can’t really learn much.</p>
+</div>
+</div>

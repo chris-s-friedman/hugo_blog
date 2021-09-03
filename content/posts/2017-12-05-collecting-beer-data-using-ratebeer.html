@@ -1,0 +1,363 @@
+---
+title: Accessing the RateBeer API with R Using httr
+author: ''
+date: '2017-12-05'
+slug: collecting-beer-data-using-ratebeer
+categories:
+  - beer
+  - data_collection
+tags:
+  - beer
+  - data_collection
+  - scraping
+  - httr
+  - r
+  - jsonlite
+  - ratebeer
+  - API
+draft: false
+type: post
+output:
+  blogdown::html_page
+---
+
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+
+
+<p>A few months ago, I was talking with a friend of mine about the idea for this blog and how I wanted to use data science to explore beer. He suggested that I use the blog as well as beer to learn something new about where I live. So I ask, what can beer teach me about Philadelphia?</p>
+<div id="the-first-thing-i-need-data" class="section level2">
+<h2>The first thing I need? Data!</h2>
+<p>Oddly enough, it’s actually pretty challenging to get access to high quality, current beer data.</p>
+<p>I chose to use <a href="https://www.ratebeer.com/">RateBeer’s</a> data, mostly because they have an easily accessible <a href="https://www.ratebeer.com/api.asp">API</a>, and meet my needs better than anyone else. They also <a href="https://www.ratebeer.com/ratingsqa.asp">disclose</a> how they come to their average beer rating, allowing me to see what’s under the hood. In the footnotes, I briefly explain some alternatives<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+</div>
+<div id="collecting-data" class="section level2">
+<h2>Collecting Data</h2>
+<p>I want to look at breweries in the area. Sadly, the RateBeer API doesn’t have a feature to search for breweries in the area. There is however, a way to query what beers a brewery makes.
+To get a list of beers a brewery makes though, I need to know what that brewery’s unique ID is. Easy enough to find. the URL for a brewery on RateBeer is of the form:</p>
+<p><code>https://www.ratebeer.com/brewers/&lt;BREWERY_NAME_HERE&gt;/&lt;BREWER_ID_HERE&gt;</code></p>
+<p>So, as an example, <code>166</code> is the ID for <a href="https://www.ratebeer.com/brewers/yards-brewing-company/166/">Yards Brewering Company</a>. The url is:</p>
+<p><code>https://www.ratebeer.com/brewers/yards-brewing-company/166/</code></p>
+<p>RateBeer’s API uses the language of <a href="http://graphql.org/learn/">GraphQL</a>. It’s beyond the scope of this post to dive into GraphQL, so instead, I’ll explain how it’s implemented in regards to the queries that I make.</p>
+<p>GraphQL requests are written in JSON format. Basically, I specify that I make a query. Nested in that call is the type of query I want to make (as well as arguments to that query), which then has the responses I wanted nested within the call.</p>
+<p>So, a query for the name of the beer with the ID number <code>4934</code> looks like this:</p>
+<pre><code>query {
+  beer(id: 4934) {
+    name
+  }
+}</code></pre>
+<p>Similarly, my query for the beers made by Yards will look like this:</p>
+<pre><code>query{
+  beersByBrewer(brewerId: 166) { # 166 is Yards
+    totalCount # This gives the total number of beers in the beer list
+    items{ # For each beer, I want these items...
+      name # the name of the beer
+      abv # the beer&#39;s ABV
+      averageRating # the average rating of the beer
+      ratingCount # the number of ratings the beer has
+      isRetired # is the beer retired?
+      style{ 
+        # Style needs to be jumped into one level because when I query style, I
+        # can also ask for a description of the style, and can even jump into 
+        # recommended glassware. That said, all I want is the style name. 
+        name
+      }
+    }
+  }
+}</code></pre>
+<p>Now that I know what format to make my request in, it’s time to actually get my first bit of data off the API!</p>
+<div id="hello-httr" class="section level3">
+<h3>Hello, httr</h3>
+<p><a href="https://github.com/r-lib/httr"><code>httr</code></a> is a package developed by Hadley Wickham of RStudio to make it easy to make HTTP requests. the package and the nuances of HTTP wont be gone into here, but some good resources for httr include the <a href="https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html">quickstart vignette</a>, and Bradley Boehmke’s <a href="http://bradleyboehmke.github.io/2016/01/scraping-via-apis.html#httr_api">post</a> on using httr.
+The httr syntax is quite simple. The main functions are curl verbs (httr is a wrapper for <a href="https://github.com/jeroen/curl">curl</a> functions), and the function arguments all start with the URL and are then followed by things to modify the URL and to send with the URL.</p>
+<p>RateBeer’s API is at <code>https://api.ratebeer.com/v1/api/graphql</code>. In the header of the request, content type and response type are required along with an API key. The query itself modifies the URL to call. So, my call to the RateBeer API to get the beers made by yards looks like this:</p>
+<pre class="r"><code>library(httr)
+
+API_key &lt;- Sys.getenv(&quot;rateBeer_API_key&quot;) 
+
+URL &lt;- &quot;https://api.ratebeer.com/v1/api/graphql&quot;
+
+beers_by_yards &lt;- POST(URL,
+         body = list(
+           query = 
+&quot;query{
+  beersByBrewer(brewerId: 166) {
+    totalCount
+    items{
+      name
+      abv
+      averageRating
+      ratingCount
+      isRetired
+      style{
+        name
+      }
+    }
+  }
+}&quot;,
+           variables = &quot;{}&quot;, 
+           operationName = NULL),
+         encode = &quot;json&quot;, # tells httr to encode the body of the request as json
+         add_headers(&quot;content-type&quot; = &quot;application/json&quot;, 
+                     &quot;Accept&quot; = &quot;application/json&quot;, 
+                     &quot;x-api-key&quot; = API_key))</code></pre>
+</div>
+<div id="parsing-the-response" class="section level3">
+<h3>Parsing the Response</h3>
+<p><code>content()</code> is httr’s function for extracting content from a request. Using the <code>type =</code> argument, we can have the function give us the data from the request as valid JSON. then we can use the <code>jsonlite</code> package to make the data easier to work with.</p>
+<pre class="r"><code>library(jsonlite)
+
+json &lt;- content(beers_by_yards, type = &quot;text&quot;)
+
+parsed_json &lt;- fromJSON(json, flatten = TRUE)</code></pre>
+<p>Recall that the response to the request was supposed to be JSON? This means that all of our items are nested in the same way as we requested them. So, to get the number of beers that Yards makes, as well as a data frame with those beers, we work through those levels.</p>
+<pre class="r"><code>beer_count &lt;- parsed_json$data$beersByBrewer$totalCount
+
+beer_df &lt;- parsed_json$data$beersByBrewer$items
+
+beer_count</code></pre>
+<pre><code>## [1] 126</code></pre>
+<pre class="r"><code>kable(beer_df, &quot;html&quot;) %&gt;%
+  kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;))</code></pre>
+<table class="table table-striped table-hover" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+name
+</th>
+<th style="text-align:right;">
+abv
+</th>
+<th style="text-align:right;">
+averageRating
+</th>
+<th style="text-align:right;">
+ratingCount
+</th>
+<th style="text-align:left;">
+isRetired
+</th>
+<th style="text-align:left;">
+style.name
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Yards IPA
+</td>
+<td style="text-align:right;">
+7.0
+</td>
+<td style="text-align:right;">
+3.487598
+</td>
+<td style="text-align:right;">
+452
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+IPA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yards Philadelphia Pale Ale
+</td>
+<td style="text-align:right;">
+4.6
+</td>
+<td style="text-align:right;">
+3.087262
+</td>
+<td style="text-align:right;">
+402
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+Pale Ale - American / APA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yards General Washington’s Tavern Porter
+</td>
+<td style="text-align:right;">
+7.0
+</td>
+<td style="text-align:right;">
+3.414651
+</td>
+<td style="text-align:right;">
+373
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+Porter
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yards Thomas Jefferson’s Tavern Ale
+</td>
+<td style="text-align:right;">
+8.0
+</td>
+<td style="text-align:right;">
+3.384788
+</td>
+<td style="text-align:right;">
+350
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+Strong Ale - American
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yards Extra Special Ale (ESA)
+</td>
+<td style="text-align:right;">
+6.3
+</td>
+<td style="text-align:right;">
+3.312626
+</td>
+<td style="text-align:right;">
+344
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+Bitter - Premium / Strong / ESB
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yards Brawler
+</td>
+<td style="text-align:right;">
+4.2
+</td>
+<td style="text-align:right;">
+3.123125
+</td>
+<td style="text-align:right;">
+322
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+Mild Ale
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yards Love Stout
+</td>
+<td style="text-align:right;">
+5.5
+</td>
+<td style="text-align:right;">
+3.373304
+</td>
+<td style="text-align:right;">
+284
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+Stout
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yards Poor Richard’s Tavern Spruce
+</td>
+<td style="text-align:right;">
+5.0
+</td>
+<td style="text-align:right;">
+3.281131
+</td>
+<td style="text-align:right;">
+230
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+Flavored - Other
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yards Saison (pre-2009)
+</td>
+<td style="text-align:right;">
+4.7
+</td>
+<td style="text-align:right;">
+3.009691
+</td>
+<td style="text-align:right;">
+203
+</td>
+<td style="text-align:left;">
+TRUE
+</td>
+<td style="text-align:left;">
+Saison / Farmhouse / Grisette
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Yards Saison (2009-)
+</td>
+<td style="text-align:right;">
+6.5
+</td>
+<td style="text-align:right;">
+3.326367
+</td>
+<td style="text-align:right;">
+159
+</td>
+<td style="text-align:left;">
+FALSE
+</td>
+<td style="text-align:left;">
+Saison / Farmhouse / Grisette
+</td>
+</tr>
+</tbody>
+</table>
+<p>So, where’s all 111 beers? The API gives us 10 beers at a time. When We make the request to the API, we can tell it where to start that list of 10 beers, alongside our request to look at beers from a certain brewery.</p>
+<p>In my next post, I’ll show how we can get all 111 of those beers and beers from other breweries, programmatically.</p>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><ul>
+<li><strong><a href="https://www.beeradvocate.com/community/threads/terms-of-service.101118/">Beer Advocate</a></strong> expressly forbids scraping and does not have an official API.</li>
+<li><strong><a href="https://untappd.com/terms/api">Untappd</a></strong> has an API but they don’t give out API keys to people that are just interested in data. If I build an app, maybe my decision will change, but in the meantime, no using their API. It looks like they may not expressly <a href="https://untappd.com/terms/">forbid</a>scraping or crawling on the site, but scraping has its own challenges. I may cover it in the future, but in the meantime, I want to just use an API.</li>
+<li><strong><a href="http://www.brewerydb.com/developers/docs">BeerDB</a></strong> looks like an awesome idea - beer data for developers! Yet, the API doesn’t show ratings and you can only get ABV if you are a premium user.I can get all the information that I am looking for from other APIs, so no need to use <em>and</em> pay for this one.</li>
+<li><strong><a href="https://openbeerdb.com/">Open Beer Database</a></strong> hasn’t updated the database since 2011. That’s a solid no.</li>
+<li><strong><a href="http://www.thebeerspot.com/">The Beer Spot</a></strong> looks like it could be a fun community, but considering that A), <a href="http://www.thebeerspot.com/forum/index.php/topic,17296.msg728792.html#msg728792">they may not have very many users</a> and B) no one has <a href="http://www.thebeerspot.com/beer/info/yuengling-brewery/yuengling-traditional-lager">reviewd Yuengling</a> (beer geek or not, a Philadelphia area staple) I’m not going to use their API.</li>
+</ul>
+<a href="#fnref1" class="footnote-back">↩</a></li>
+</ol>
+</div>

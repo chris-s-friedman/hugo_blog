@@ -1,0 +1,498 @@
+---
+title: 'Working with stocks: Intermediate and Advanced Challenges'
+author: ''
+date: '2019-08-10'
+draft: false
+slug: working-with-stocks-intermediate-and-advanced-challenges
+categories:
+  - sql
+tags:
+  - sql
+  - stocks
+keywords:
+  - tech
+type: post
+---
+
+
+
+<p>This is a continuation of my work on the <a href="https://discuss.codecademy.com/t/data-science-independent-project-1-watching-the-stock-market/419943">codeacademy data science independant project #1: Watching the Stock Market</a>.</p>
+<ul>
+<li>My <a href="../../07/creating-a-stocks-database/">first post</a> on the subject explores how I put gathered the stock data.</li>
+<li>In my <a href="../../07/working-with-stocks-basic-sql">second post</a>, I explored the data using basic sql queries (and put my sql code out into the world for the first time!)</li>
+</ul>
+<hr />
+<p>After completing the basic challenges from my last post on the topic, there are intermediate and advanced challenges too while playing with these stocks data.</p>
+<p>Let’s jump into the challenges!</p>
+<div id="intermediate-challenges" class="section level1">
+<h1>Intermediate Challenges</h1>
+<div id="use-aggregate-functions-to-look-at-key-statistics-about-the-data-e.g.-min-max-average." class="section level2">
+<h2>1. Use aggregate functions to look at key statistics about the data (e.g., min, max, average).</h2>
+<pre class="sql"><code>SELECT ROUND(AVG(price), 2) AS average_price, 
+       ROUND(MIN(price), 2) AS min_price, 
+       ROUND(MAX(price), 2) AS max_price 
+FROM stocks;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:intermediate1">Table 1: </span>1 records</caption>
+<thead>
+<tr class="header">
+<th align="left">average_price</th>
+<th align="right">min_price</th>
+<th align="right">max_price</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">189.5</td>
+<td align="right">87.5</td>
+<td align="right">377.36</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>At the end of my last post, I mentioned that it may be possible that I picked… well expensive stocks. at an average cost of nearly $190 per share, I’d definitely say these aren’t cheap!</p>
+</div>
+<div id="group-the-data-by-stock-and-repeat.-how-do-the-stocks-compare-to-each-other" class="section level2">
+<h2>2. Group the data by stock and repeat. How do the stocks compare to each other?</h2>
+<p>So, what’s the variability in stock price within each stock?</p>
+<pre class="sql"><code>SELECT name, 
+       ROUND(AVG(price), 2) AS average_price, 
+       ROUND(MIN(price), 2) AS min_price, 
+       ROUND(MAX(price), 2) AS max_price 
+FROM stocks
+GROUP BY name
+ORDER BY average_price;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:intermediate2">Table 2: </span>5 records</caption>
+<thead>
+<tr class="header">
+<th align="left">name</th>
+<th align="right">average_price</th>
+<th align="right">min_price</th>
+<th align="right">max_price</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Electronic Arts</td>
+<td align="right">93.73</td>
+<td align="right">87.50</td>
+<td align="right">102.72</td>
+</tr>
+<tr class="even">
+<td align="left">Spotify</td>
+<td align="right">140.56</td>
+<td align="right">121.58</td>
+<td align="right">155.38</td>
+</tr>
+<tr class="odd">
+<td align="left">NVIDIA</td>
+<td align="right">159.38</td>
+<td align="right">133.78</td>
+<td align="right">182.98</td>
+</tr>
+<tr class="even">
+<td align="left">Apple</td>
+<td align="right">196.11</td>
+<td align="right">173.30</td>
+<td align="right">210.94</td>
+</tr>
+<tr class="odd">
+<td align="left">Boeing</td>
+<td align="right">357.74</td>
+<td align="right">337.37</td>
+<td align="right">377.36</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>So, EA’s stock is lower than all the others and never even overlaps the stock price of any of the other stocks. On the other end of the spectrum is Boeing - more expensive than all the others by leaps over $100 dollars a share! Spotify and Nvidia are closer in price to each other than Nvidia and Apple but Spotify isn’t as expensive as Nvidia.</p>
+</div>
+<div id="group-the-data-by-day-or-hour-of-day.-does-day-of-week-or-time-of-day-impact-prices" class="section level2">
+<h2>3. Group the data by day or hour of day. Does day of week or time of day impact prices?</h2>
+<pre class="sql"><code>SELECT date, 
+       ROUND(AVG(price), 2) AS average_price
+FROM stocks
+GROUP BY date
+ORDER BY average_price DESC;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:intermediate3">Table 3: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="left">date</th>
+<th align="right">average_price</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">5/3/19</td>
+<td align="right">199.34</td>
+</tr>
+<tr class="even">
+<td align="left">5/1/19</td>
+<td align="right">199.20</td>
+</tr>
+<tr class="odd">
+<td align="left">7/23/19</td>
+<td align="right">198.91</td>
+</tr>
+<tr class="even">
+<td align="left">5/2/19</td>
+<td align="right">198.42</td>
+</tr>
+<tr class="odd">
+<td align="left">7/24/19</td>
+<td align="right">198.18</td>
+</tr>
+<tr class="even">
+<td align="left">5/6/19</td>
+<td align="right">197.51</td>
+</tr>
+<tr class="odd">
+<td align="left">7/22/19</td>
+<td align="right">197.37</td>
+</tr>
+<tr class="even">
+<td align="left">4/30/19</td>
+<td align="right">197.33</td>
+</tr>
+<tr class="odd">
+<td align="left">7/12/19</td>
+<td align="right">196.27</td>
+</tr>
+<tr class="even">
+<td align="left">7/15/19</td>
+<td align="right">196.12</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Well, I don’t know about day of the week but it does look like that things were looking particularly good at the beginning of may!</p>
+</div>
+<div id="which-of-the-rows-have-a-price-greater-than-the-average-of-all-prices-in-the-dataset" class="section level2">
+<h2>4. Which of the rows have a price greater than the average of all prices in the dataset?</h2>
+<pre class="sql"><code>SELECT *
+FROM stocks
+WHERE price &gt; 189.5;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:test">Table 4: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="left">symbol</th>
+<th align="left">name</th>
+<th align="left">date</th>
+<th align="right">price</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">4/30/19</td>
+<td align="right">199.9002</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">5/1/19</td>
+<td align="right">209.7124</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">5/2/19</td>
+<td align="right">208.3477</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">5/3/19</td>
+<td align="right">210.9377</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">5/6/19</td>
+<td align="right">207.6802</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">5/7/19</td>
+<td align="right">202.0818</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">5/8/19</td>
+<td align="right">202.1216</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">5/9/19</td>
+<td align="right">199.9500</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">5/10/19</td>
+<td align="right">197.1800</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+<td align="left">5/15/19</td>
+<td align="right">190.9200</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A lot of rows. A lot of rows have a price greater than the average price (110 to be precise). If you look at the table from challenge 2, you’ll see that the only stocks above the average are from Apple and Boeing.</p>
+</div>
+</div>
+<div id="advanced-challenge" class="section level1">
+<h1>Advanced Challenge</h1>
+<div id="calculate-other-key-statistics-like-median-or-variance." class="section level2">
+<h2>1. Calculate other key statistics, like median or variance.</h2>
+<pre class="sql"><code>SELECT AVG((stocks.price - sub.a) * (stocks.price - sub.a)) AS variance
+FROM stocks, 
+    (SELECT AVG(price) AS a 
+     FROM stocks) AS sub;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:variance">Table 5: </span>1 records</caption>
+<thead>
+<tr class="header">
+<th align="left">variance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">8257.67435647567</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="sql"><code>SELECT price AS median
+FROM stocks
+ORDER BY price
+LIMIT 1
+OFFSET (SELECT COUNT(price)
+        FROM stocks) / 2;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:median">Table 6: </span>1 records</caption>
+<thead>
+<tr class="header">
+<th align="left">median</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">159.398056</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="refactor-the-data-into-2-tables" class="section level2">
+<h2>2. Refactor the data into 2 tables</h2>
+<p>We’ll refactor the stocks table into stock_info to store general info about the stock itself (ie. symbol, name) and stock_prices to store the collected data on price (ie. symbol, date, price).</p>
+<pre class="sql"><code>CREATE TABLE stock_info
+AS SELECT DISTINCT symbol, name 
+   FROM stocks;</code></pre>
+<pre class="sql"><code>CREATE TABLE stock_prices
+AS SELECT symbol, date, price
+   FROM stocks;</code></pre>
+<pre class="sql"><code>SELECT *
+FROM stock_info;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>(#tab:show_stock_info)5 records</caption>
+<thead>
+<tr class="header">
+<th align="left">symbol</th>
+<th align="left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="even">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+</tr>
+<tr class="odd">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+</tr>
+<tr class="even">
+<td align="left">SPOT</td>
+<td align="left">Spotify</td>
+</tr>
+<tr class="odd">
+<td align="left">NVDA</td>
+<td align="left">NVIDIA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<pre class="sql"><code>SELECT *
+FROM stock_prices;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>(#tab:show_stock_prices)Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="left">symbol</th>
+<th align="left">date</th>
+<th align="right">price</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">4/30/19</td>
+<td align="right">199.9002</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/1/19</td>
+<td align="right">209.7124</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">5/2/19</td>
+<td align="right">208.3477</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/3/19</td>
+<td align="right">210.9377</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">5/6/19</td>
+<td align="right">207.6802</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/7/19</td>
+<td align="right">202.0818</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">5/8/19</td>
+<td align="right">202.1216</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/9/19</td>
+<td align="right">199.9500</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">5/10/19</td>
+<td align="right">197.1800</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/13/19</td>
+<td align="right">185.7200</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="now-join-the-2-tables-in-order-to-view-more-information-on-the-stock-with-each-row-of-price." class="section level2">
+<h2>3. Now join the 2 tables in order to view more information on the stock with each row of price.</h2>
+<pre class="sql"><code>SELECT stock_prices.symbol, date, price, name
+FROM stock_prices
+LEFT JOIN stock_info ON stock_info.symbol = stock_prices.symbol;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:advanced3">Table 7: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="left">symbol</th>
+<th align="left">date</th>
+<th align="right">price</th>
+<th align="left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">4/30/19</td>
+<td align="right">199.9002</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/1/19</td>
+<td align="right">209.7124</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">5/2/19</td>
+<td align="right">208.3477</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/3/19</td>
+<td align="right">210.9377</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">5/6/19</td>
+<td align="right">207.6802</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/7/19</td>
+<td align="right">202.0818</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">5/8/19</td>
+<td align="right">202.1216</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/9/19</td>
+<td align="right">199.9500</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="odd">
+<td align="left">APPL</td>
+<td align="left">5/10/19</td>
+<td align="right">197.1800</td>
+<td align="left">Apple</td>
+</tr>
+<tr class="even">
+<td align="left">APPL</td>
+<td align="left">5/13/19</td>
+<td align="right">185.7200</td>
+<td align="left">Apple</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Awesome! Now on to the next set of SQL challenges in another post!</p>
+<pre class="sql"><code>DROP TABLE stock_prices;</code></pre>
+<pre class="sql"><code>DROP TABLE stock_info;</code></pre>
+</div>
+</div>

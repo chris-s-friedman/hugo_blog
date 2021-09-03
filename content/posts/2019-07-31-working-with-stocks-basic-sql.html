@@ -1,0 +1,284 @@
+---
+title: 'Working with stocks: Basic SQL'
+author: ''
+date: '2019-07-31'
+slug: working-with-stocks-basic-sql
+categories:
+  - sql
+tags:
+  - sql
+  - stocks
+type: post
+keywords:
+  - tech
+---
+
+
+
+<p>This is a continuation of my work on the <a href="https://discuss.codecademy.com/t/data-science-independent-project-1-watching-the-stock-market/419943">codeacademy data science independant project #1: Watching the Stock Market</a>. My first post is <a href="../creating-a-stocks-database/">here</a>.</p>
+<hr />
+<p>In this project, the basic tasks are:</p>
+<ol style="list-style-type: decimal">
+<li>What are the distinct stocks in the table?</li>
+<li>Query all data for a single stock. Do you notice any overall trends?</li>
+<li>Which rows have a price above 100? between 40 to 50, etc?</li>
+<li>Sort the table by price. What are the minimum and maximum prices?</li>
+</ol>
+<div id="setup" class="section level1">
+<h1>Setup</h1>
+<p>I write this blog using rmarkdown and the entire project is powered by bookdown. SO there’s some setup that needs to take place to get it all to work.</p>
+<pre class="r"><code>library(DBI)
+db = dbConnect(RSQLite::SQLite(), dbname = &quot;../../data/stocks/stocks.db&quot;)</code></pre>
+</div>
+<div id="what-are-the-distinct-stocks-in-the-table" class="section level1">
+<h1>What are the distinct stocks in the table?</h1>
+<pre class="sql"><code>SELECT DISTINCT name
+FROM stocks;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-1">Table 1: </span>5 records</caption>
+<thead>
+<tr class="header">
+<th align="left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Apple</td>
+</tr>
+<tr class="even">
+<td align="left">Boeing</td>
+</tr>
+<tr class="odd">
+<td align="left">Electronic Arts</td>
+</tr>
+<tr class="even">
+<td align="left">Spotify</td>
+</tr>
+<tr class="odd">
+<td align="left">NVIDIA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>In my last post about putting together the database, I said that I was collecting data on stocks for Apple, Boeing, Spotify, EA, and Nvidia. Here’s the proof!</p>
+</div>
+<div id="query-all-data-for-a-single-stock.-do-you-notice-any-overall-trends" class="section level1">
+<h1>Query all data for a single stock. Do you notice any overall trends?</h1>
+<p>Alright! To analyze trends for the Apple stocks, we’ll plot them thorugh time. And, we’ll do it in R! First, I’ll run some SQL code to extract the APPL stocks. Silently, the output of the SQL query below will be returned as variable we can access in an R code chunk, <code>appl_stocks</code>.</p>
+<pre class="sql"><code>SELECT * 
+FROM stocks
+WHERE name = &#39;Apple&#39;</code></pre>
+<pre class="r"><code>library(ggplot2)
+
+appl_stocks$date &lt;- as.Date(appl_stocks$date, &quot;%m/%d/%y&quot;)
+
+ggplot(appl_stocks, aes(x = date, y = price)) +
+  geom_line()</code></pre>
+<p><img src="/post/2019-07-31-working-with-stocks-basic-sql_files/figure-html/appl_overall_trends-1.png" width="672" /></p>
+<p>Huh! Something happened in the beginning of June that was bad for Apple’s stock. Looks like it is taking about two months for the price to recover. Wonder what that is… My first guess was the anouncement of Johnny Ive, but I looked and that wasn’t until the <a href="https://www.wired.com/story/jony-ive-leaves-apple/">end of June</a>. My best guess is decline in iPhone sales coupled with s<a href="https://www.usnews.com/news/business/articles/2019-07-30/apples-quarterly-profit-falls-as-iphone-sales-sputter">ome negative predictions of tech stocks</a>.</p>
+</div>
+<div id="which-rows-have-a-price-above-100-between-40-to-50-etc" class="section level1">
+<h1>Which rows have a price above 100? between 40 to 50, etc?</h1>
+<p>This just requires some simple filtering!</p>
+<pre class="sql"><code>SELECT COUNT(*) 
+FROM stocks
+WHERE price &gt; 100;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-3">Table 2: </span>1 records</caption>
+<thead>
+<tr class="header">
+<th align="left">COUNT(*)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">255</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Wow! That’s a few stocks!</p>
+<pre class="sql"><code>SELECT COUNT(*) 
+FROM stocks
+WHERE price &gt;= 40
+  AND price &lt;= 50;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-4">Table 3: </span>1 records</caption>
+<thead>
+<tr class="header">
+<th align="left">COUNT(*)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Well, I picked pricy stocks…</p>
+</div>
+<div id="sort-the-table-by-price.-what-are-the-minimum-and-maximum-prices" class="section level1">
+<h1>Sort the table by price. What are the minimum and maximum prices?</h1>
+<p>These are the least expensive stocks</p>
+<pre class="sql"><code>SELECT *
+FROM stocks
+ORDER BY price;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-5">Table 4: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="left">symbol</th>
+<th align="left">name</th>
+<th align="left">date</th>
+<th align="right">price</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/19/19</td>
+<td align="right">87.50</td>
+</tr>
+<tr class="even">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/22/19</td>
+<td align="right">88.14</td>
+</tr>
+<tr class="odd">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/23/19</td>
+<td align="right">88.22</td>
+</tr>
+<tr class="even">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/29/19</td>
+<td align="right">88.87</td>
+</tr>
+<tr class="odd">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/25/19</td>
+<td align="right">89.16</td>
+</tr>
+<tr class="even">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/18/19</td>
+<td align="right">89.19</td>
+</tr>
+<tr class="odd">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/26/19</td>
+<td align="right">89.51</td>
+</tr>
+<tr class="even">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/16/19</td>
+<td align="right">89.55</td>
+</tr>
+<tr class="odd">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/17/19</td>
+<td align="right">89.70</td>
+</tr>
+<tr class="even">
+<td align="left">EA</td>
+<td align="left">Electronic Arts</td>
+<td align="left">7/24/19</td>
+<td align="right">89.78</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>And these are the most expensive stocks.</p>
+<pre class="sql"><code>SELECT *
+FROM stocks
+ORDER BY price DESC;</code></pre>
+<div class="knitsql-table">
+<table>
+<caption><span id="tab:unnamed-chunk-6">Table 5: </span>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="left">symbol</th>
+<th align="left">name</th>
+<th align="left">date</th>
+<th align="right">price</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">7/19/19</td>
+<td align="right">377.3600</td>
+</tr>
+<tr class="even">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">4/30/19</td>
+<td align="right">375.5325</td>
+</tr>
+<tr class="odd">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">6/26/19</td>
+<td align="right">374.9400</td>
+</tr>
+<tr class="even">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">6/20/19</td>
+<td align="right">374.8800</td>
+</tr>
+<tr class="odd">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">5/1/19</td>
+<td align="right">374.6476</td>
+</tr>
+<tr class="even">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">5/3/19</td>
+<td align="right">374.3095</td>
+</tr>
+<tr class="odd">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">6/24/19</td>
+<td align="right">373.9900</td>
+</tr>
+<tr class="even">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">6/18/19</td>
+<td align="right">373.9600</td>
+</tr>
+<tr class="odd">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">5/2/19</td>
+<td align="right">373.6533</td>
+</tr>
+<tr class="even">
+<td align="left">BA</td>
+<td align="left">Boeing</td>
+<td align="left">7/22/19</td>
+<td align="right">373.4200</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>

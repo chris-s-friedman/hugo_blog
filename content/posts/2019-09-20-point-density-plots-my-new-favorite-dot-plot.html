@@ -1,0 +1,51 @@
+---
+title: Point-Density Plots - My New Favorite Dot Plot
+author: ''
+date: '2019-09-20'
+slug: point-density-plots-my-new-favorite-dot-plot
+categories:
+  - r
+tags:
+  - r
+  - data_visualization
+  - ggplot
+keywords:
+  - tech
+type: post
+---
+
+
+
+<p>A few weeks ago the wonderful <a href="https://rweekly.org/2019-36.html">RWeekly</a> mailing list introduced me to a new type of plot - the point density plot. Wonderfully, the ability to make this plot has been added to the R community in the form of a new package, <a href="https://github.com/LKremer/ggpointdensity">ggpointdensity</a>.</p>
+<p>From the top line description, it’s a cross between a scatter plot and a 2D density plot. The motivation for creating the package and using this new plot is that the points in scatter plots can overlap one another while the alternative density plots lose the resolution given by plotting indiviudal points.</p>
+<p>Before I get ahead of myself, the plots look like this:</p>
+<div class="figure">
+<img src="https://res.cloudinary.com/chrissfriedman/image/upload/v1569029031/point-density-plots/pointdensity.png" alt="Plot from the package documentation on Github" />
+<p class="caption">Plot from the package documentation on Github</p>
+</div>
+<p>If it isn’t obvious from the package name (or the image above), this is made to work with ggplot2 and simply adds a new geom, <code>geom_pointdensity()</code>.</p>
+<p>Each point is colored by how many points are around it.</p>
+<p>To further illustrate it, let’s look at a data set I’ve been playing with at work. I’ve been examining school districts around philadelphia and getting information about each one from the U.S. Census American Community Survey. After contacting both the Google Maps API and the US Census API, I found 1,074 school districts within three hours of Philly.</p>
+<p>Before using this new geom, I would have probably made this plot:</p>
+<div class="figure">
+<img src="https://res.cloudinary.com/chrissfriedman/image/upload/v1569028882/point-density-plots/household_income_vs_percent_poverty-point.png" alt="geom_point()" />
+<p class="caption">geom_point()</p>
+</div>
+<p>While there are a bunch of districts surounding it, there’s a central feature in the bottom left of the plot where many points are over plotted. To produce that plot I used <code>geom_point()</code>. What if instead I were to use <code>geom_density_2d()</code>?</p>
+<div class="figure">
+<img src="https://res.cloudinary.com/chrissfriedman/image/upload/v1569028882/point-density-plots/household_income_vs_percent_poverty-density.png" alt="geom_density_2d() + stat_density_2d()" />
+<p class="caption">geom_density_2d() + stat_density_2d()</p>
+</div>
+<p>As the package author mentions in their description, you lose the abilty to see outliers. You can certainly see that, as we lost a lot of resolution. Certainly then, we could try to plot both the points and density at the same time…</p>
+<div class="figure">
+<img src="https://res.cloudinary.com/chrissfriedman/image/upload/v1569028882/point-density-plots/household_income_vs_percent_poverty-point_and_density.png" alt="geom_point() + geom_density_2d() + stat_density_2d()" />
+<p class="caption">geom_point() + geom_density_2d() + stat_density_2d()</p>
+</div>
+<p>I showed my coworker that one and they said they liked it because it looked kind of like a <a href="https://en.wikipedia.org/wiki/Papaya">papaya</a>. I dont really see it but 🤷‍♂…</p>
+<p>Anyway, let’s now visualize this with our brand new tool - <code>geom_pointdensity()</code>!</p>
+<div class="figure">
+<img src="https://res.cloudinary.com/chrissfriedman/image/upload/v1569028882/point-density-plots/household_income_vs_percent_poverty-pointdensity.png" alt="geom_pointdensity()" />
+<p class="caption">geom_pointdensity()</p>
+</div>
+<p>I like this because you get the high resolution of the dot plot but you can also see where the areas are with the highest density of points.</p>
+<p>Also, I think these plots just look really really cool.</p>

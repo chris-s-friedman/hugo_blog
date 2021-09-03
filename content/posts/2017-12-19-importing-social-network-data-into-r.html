@@ -1,0 +1,107 @@
+---
+title: Importing Social Network Data into R
+author: ''
+date: '2017-12-19'
+slug: importing-social-network-data-into-r
+categories:
+  - Social Networks
+tags:
+  - r
+  - Social Network Analysis
+  - igraph
+  - egocentric networks
+type: post
+---
+
+
+
+<p>In my professional life, I manage and analyze data on a team that studies the social networks surounding children with autism. The purpose of this post is not to discuss that work in depth, but rather to show how to quickly and easily import one type of data I work with into R. For social network analysis, I use the package <a href="http://igraph.org/r/">igraph</a>.</p>
+<p>The type of data I’m going to talk about iporting today is egocentric network data. For those that don’t know, egocentric network data involves asking a single person about the makeup of an entire network.</p>
+<div id="collecting-egocentric-network-data" class="section level2">
+<h2>Collecting Egocentric Network Data</h2>
+<p>To demonstrate, imagine that I’m interested in social networks at the gym and that you go to the gym with a three friends every week. I approach you and after asking you to join my study, ask you who you go the gym with.</p>
+<p>You say “James, Jen, and Rene.”</p>
+<p>Then I ask some questions about the group in relation to James:</p>
+<blockquote>
+<p>How many times a week do you see James?</p>
+</blockquote>
+<blockquote>
+<p>How many times a week does James see Jen?</p>
+</blockquote>
+<blockquote>
+<p>How many times a week does James see Rene?</p>
+</blockquote>
+<p>We then do the same for Jen and Rene where I ask you often you see Jen and how often she sees Rene, and then I ask how often you see Rene.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<p>My survey here came in two parts:</p>
+<ol style="list-style-type: decimal">
+<li>A <strong>name generatorr</strong> where I ask you who you interact with</li>
+<li>A <strong>name modifier</strong> where I ask you how you interact with each person</li>
+</ol>
+<p>After the data are collected, I log it all in my spreadsheet where each row corresponds to a data collection instance.</p>
+<p>So, I have data that look like this:</p>
+<pre class="r"><code>library(dplyr)
+
+gym_networks &lt;- data_frame(
+  participant = c(&quot;You&quot;, &quot;Bart&quot;, &quot;Lisa&quot;), 
+  p1 = c(&quot;James&quot;, &quot;Milhouse&quot;, &quot;Sherry&quot;), 
+  p2 = c(&quot;Jen&quot;, &quot;Nelson&quot;, &quot;Terry&quot;), 
+  p3 = c(&quot;Rene&quot;, &quot;Martin&quot;, &quot;Ralph&quot;), 
+  participant_x_p1 = sample(1:10, 3), 
+  p1_x_p2 = sample(1:10, 3), 
+  p1_x_p3 = sample(1:10, 3),  
+  participant_x_p2 = sample(1:10, 3), 
+  p2_x_p3 = sample(1:10, 3), 
+  participant_x_p3 = sample(1:10, 3)
+)
+print(gym_networks)</code></pre>
+<pre><code>## # A tibble: 3 x 10
+##   participant       p1     p2     p3 participant_x_p1 p1_x_p2 p1_x_p3
+##         &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt;            &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
+## 1         You    James    Jen   Rene                1       7      10
+## 2        Bart Milhouse Nelson Martin                8       1       7
+## 3        Lisa   Sherry  Terry  Ralph                7       6       3
+## # ... with 3 more variables: participant_x_p2 &lt;int&gt;, p2_x_p3 &lt;int&gt;,
+## #   participant_x_p3 &lt;int&gt;</code></pre>
+</div>
+<div id="getting-the-data-ready-for-analysis" class="section level2">
+<h2>Getting the data ready for analysis</h2>
+<p>The data here are represented in an adjacency list with weights attached. Although igraph has a function for importing adjacency lists, it isn’t not configured to handle weights, so we will take our adjacency list and convert it into an edge list, which igraph can handle with weights.</p>
+<p>To accomplish this, we’ll use the package <a href="http://tidyr.tidyverse.org/">tidyr</a>.</p>
+<pre class="r"><code>library(tidyr)
+
+el &lt;- gym_networks %&gt;% 
+  # Step 1: Make each row a single edge
+  gather(key, value = &quot;weight&quot;, -(participant:p3)) %&gt;% 
+  # Step 2: Configure two new columns, an ego, and an alter
+  mutate(ego = case_when(grepl(&quot;participant&quot;, key) ~ participant, 
+                         grepl(&quot;p1_&quot;, key) ~ p1, 
+                         grepl(&quot;p2_&quot;, key) ~ p2, 
+                         grepl(&quot;p3_&quot;, key) ~ p3), 
+         alter = case_when(grepl(&quot;_p1&quot;, key) ~ p1, 
+                           grepl(&quot;_p2&quot;, key) ~ p2, 
+                           grepl(&quot;_p3&quot;, key) ~ p3)) %&gt;% 
+  # Step 3: Clean up the data frame
+  select(ego, alter, weight)
+
+print(head(el))</code></pre>
+<pre><code>## # A tibble: 6 x 3
+##        ego    alter weight
+##      &lt;chr&gt;    &lt;chr&gt;  &lt;int&gt;
+## 1      You    James      1
+## 2     Bart Milhouse      8
+## 3     Lisa   Sherry      7
+## 4    James      Jen      7
+## 5 Milhouse   Nelson      1
+## 6   Sherry    Terry      6</code></pre>
+<p>In three steps, we go from adjacency list to edge list. In one more step, we have an igraph object to analyse and plot!</p>
+<pre class="r"><code>library(igraph)
+
+graph &lt;- graph_from_data_frame(el)</code></pre>
+<p>Happy analyzing, friends!</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>I don’t ask how often Jen sees James and how often Rene sees James or Jen because we assume that it takes two to tango in this respect.<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
