@@ -1,7 +1,7 @@
 baseURL = "https://chris-s-friedman.com/"
 defaultContentLanguage = "en"
 languageCode = 'en-us'
-title = "Chris Friedman"
+title = "Musings on Computings"
 theme = "gokarna"
 enableRobotsTXT = true
 
@@ -46,12 +46,12 @@ name = "Resume"
 url = "https://cv.chris-s-friedman.com/files/Friedman_Resume.pdf"
 
 [params]
-description = "Chris Friedman's Blog"
+description = "A Blog from Chris Friedman"
 favicon = "https://res.cloudinary.com/chrissfriedman/image/upload/v1512174331/favicon_j0grb0.ico"
 showPostsOnHomePage = "recent"
 accentColor = "#3dccc7"
 avatarURL = "https://res.cloudinary.com/chrissfriedman/image/upload/c_scale,w_1480/v1512174332/cover_kvxrzm.jpg"
-footer = "Text in footer"
+footer = "Chris Friedman"
 avatarSize = "size-m"
 
 [permalinks]
