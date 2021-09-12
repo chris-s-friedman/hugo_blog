@@ -58,3 +58,13 @@ css = ['css/custom.css']
 
 [permalinks]
 post = "/:year/:month/:slug/"
+
+# [module]
+# [[module.imports]]
+# path = "github.com/bep/hugo-mod-misc/render-hooks"
+[markup]
+
+[markup.goldmark]
+
+[markup.goldmark.renderer]
+unsafe = true
