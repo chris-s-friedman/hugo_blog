@@ -1,17 +1,17 @@
 ---
 title: "Dotfiles"
 date: 2021-09-07T20:41:05-04:00
-draft: true
+draft: false
 type: "post"
 slug: "dotfiles"
 tags:
   - dotfiles
 ---
 
-If there's a single tool I made, that I am most greatful for having in my toolbelt, i'd say it is my collectiong of dotfiles. I am frequently booting up new cloud computing instances, so being able to automate - and quickly execute - my setup allows me to have a omre enjoyable dev experience.
+If there's a single tool I made, that I am most greatful for having in my toolbelt, i'd say it is my collection of dotfiles. I am frequently booting up new cloud computing instances, so being able to automate - and quickly execute - my setup allows me to have a more enjoyable dev experience.
 
 {{% note %}}
-Disclaimer: Below i'll talk about my dotfiles and the way _I_ organize them, but dotfiles are a very personal tool that should be suited to the individual's needs, desires, and preferences. That, said, my dotfiles are <a href="https://github.com/chris-s-friedman/dotfiles" target="_blank">here</a>
+Disclaimer: Below i'll talk about my dotfiles and the way _that I_ organize them, but dotfiles are a very personal tool that should be suited to the individual's needs, desires, and preferences. That said, my dotfiles are <a href="https://github.com/chris-s-friedman/dotfiles" target="_blank">here</a>
 {{% /note %}}
 
 ## Individual Dotfiles
@@ -29,7 +29,7 @@ Currently, my dotfiles are split into the following seperate files:
 
 ## Setup Scripts
 
-When setting a new machine - for personal use, or work, or perhaps a cloud compute instance such as an ec2 - i can use the setup scripts I have to get my dotfiles in place and being used.
+When setting up a new machine - for personal use, work, or perhaps a cloud compute instance such as an ec2 - i can use the setup scripts I have to get my dotfiles in place and being used.
 
 1. Clone my dotfiles `git clone https://github.com/chris-s-friedman/dotfiles.git`
 2. cd into my dotfile repo `cd dotfiles`
