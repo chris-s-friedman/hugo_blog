@@ -1,7 +1,7 @@
 ---
 title: "About Me"
 date: 2021-09-12T10:23:03-04:00
-draft: true
+draft: False
 ---
 
 I'm Chris Friedman.
