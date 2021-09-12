@@ -49,10 +49,22 @@ url = "https://cv.chris-s-friedman.com/files/Friedman_Resume.pdf"
 description = "A Blog from Chris Friedman"
 favicon = "https://res.cloudinary.com/chrissfriedman/image/upload/v1512174331/favicon_j0grb0.ico"
 showPostsOnHomePage = "recent"
-accentColor = "#3dccc7"
+accentColor = "#73d2de"
+accentColor2 = "#ffbc42"
 avatarURL = "https://res.cloudinary.com/chrissfriedman/image/upload/c_scale,w_1480/v1512174332/cover_kvxrzm.jpg"
 footer = "Chris Friedman"
 avatarSize = "size-m"
+css = ['css/custom.css']
 
 [permalinks]
 post = "/:year/:month/:slug/"
+
+# [module]
+# [[module.imports]]
+# path = "github.com/bep/hugo-mod-misc/render-hooks"
+[markup]
+
+[markup.goldmark]
+
+[markup.goldmark.renderer]
+unsafe = true
