@@ -29,6 +29,8 @@ Currently, my dotfiles are split into the following seperate files:
 
 ## Setup Scripts
 
+### General Setup
+
 When setting up a new machine - for personal use, work, or perhaps a cloud compute instance such as an ec2 - i can use the setup scripts I have to get my dotfiles in place and being used.
 
 1. Clone my dotfiles `git clone https://github.com/chris-s-friedman/dotfiles.git`
@@ -38,3 +40,21 @@ When setting up a new machine - for personal use, work, or perhaps a cloud compu
 5. do the rest of the setup, like copying over the dotfiles, setting up oh-my-zsh addons, and installing other apps, programs, and tools `sh system/setup.sh`
 
 Once that script finished, I'm usually good to go and ready to start working!
+
+### Vim setup
+
+Although it's not my main text editor, I use vim every day for quick edits of files, so it's convenient to have it setup on all the machines I work with.
+
+For the simple setup of vim, I can just run `sh system/vim_setup.sh`.
+
+Everything starts with my `.vimrc` file. I use vundle to manage my vim plugins, so after copying the vimrc to the path, vundle is installed.
+
+After vundle is installed, vim is settup to run the way I like it!
+
+{{% note %}}
+
+#### Edit
+
+- 2021-10-15: Add notes about setting up Vim.
+
+{{% /note %}}
