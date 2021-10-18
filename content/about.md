@@ -6,7 +6,7 @@ draft: False
 
 I'm Chris Friedman.
 
-By day, you can find me working on projects at a major academic hospital in Philadelphia.
+By day, you can find me working on projects at a major academic hospital.
 
 By night and on the weekends, you can find my futzing with my home network, brewing beer, gardening, woodworking, or hiking with my dog.
 
