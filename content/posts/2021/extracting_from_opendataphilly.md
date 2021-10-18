@@ -1,7 +1,7 @@
 ---
 title: "Extracting Data from Open Data Philly"
 date: 2021-10-17T18:45:35-04:00
-draft: true
+draft: False
 type: "post"
 slug: "extracting-from-opendataphilly"
 ---
