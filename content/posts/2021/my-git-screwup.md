@@ -32,7 +32,7 @@ Untracked files:
 	config/home-assistant_v2.db.corrupt.2021-10-24T13:51:45.805151+00:00
 ```
 
-Ok. so I add some stuff to my `.gitignore` but there's still that `config/home-assistant.log` sitting there, being tracked.
+Ok, so I add some stuff to my `.gitignore` but there's still that `config/home-assistant.log` sitting there, being tracked.
 
 I then do what any dev would do: I look it up:
 
