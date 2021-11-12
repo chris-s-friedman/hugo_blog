@@ -4,6 +4,8 @@ date: 2021-10-24T10:31:33-04:00
 draft: false
 type: "post"
 slug: "my-git-screwup"
+tags:
+  - git
 ---
 
 {{% warning %}}
