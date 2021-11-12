@@ -4,6 +4,10 @@ date: 2021-10-17T18:45:35-04:00
 draft: False
 type: "post"
 slug: "extracting-from-opendataphilly"
+tags:
+  - python
+  - sql
+  - opendataphilly
 ---
 
 A little over a year ago, I moved into a new neighborhood in my city. I was really excited about the space and am glad to say I love it even more now after living here a while.
