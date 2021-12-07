@@ -4,6 +4,7 @@ languageCode = 'en-us'
 title = "Musings on Computings"
 theme = "gokarna"
 enableRobotsTXT = true
+enableEmoji = true
 
 [menu]
 
@@ -30,6 +31,12 @@ weight = 2
 identifer = "About"
 name = "About"
 url = "/about"
+weight = 3
+
+[[menu.main]]
+identifer = "Newsletter"
+name = "Newsletter"
+url = "/newsletter"
 weight = 3
 
 [[menu.main]]
