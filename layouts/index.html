@@ -1,0 +1,34 @@
+{{ define "main" }}
+<section class="home-about">
+	<div class="avatar">
+        {{ if isset .Site.Params "avatarurl" }}
+        <img class={{ .Site.Params.AvatarSize | default "size-m" }} src='{{ .Site.Params.AvatarURL }}'>
+        {{ end }}
+	</div>
+    <h1>{{ .Site.Title }}</h1>
+    <h3>{{ .Site.Params.Description }}</h3>
+</section>
+
+<div class="flex-break"></div>
+
+{{ if isset .Site.Params "showpostsonhomepage" }}
+
+    <div class="home-posts list-posts">
+        <h2>{{ .Site.Params.ShowPostsOnHomePage | humanize }} Posts</h2>
+
+    {{ $posts := where ( where .Site.Pages "Params.type" "post" ) ".Params.is_newsletter" "!=" "true"}}   
+
+    {{ if eq .Site.Params.ShowPostsOnHomePage "popular" }}
+        {{ range $posts.ByWeight | first 4 }}
+            {{- partial "list-posts.html" . -}}
+        {{ end }}
+    {{ else if eq .Site.Params.ShowPostsOnHomePage "recent" }}
+        {{ range $posts.ByDate.Reverse | first 5 }}
+            {{- partial "list-posts.html" . -}}
+        {{ end }}
+    {{ end }}
+    </div>
+
+{{ end }}
+
+{{ end }}
