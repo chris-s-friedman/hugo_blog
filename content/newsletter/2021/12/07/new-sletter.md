@@ -1,8 +1,9 @@
 ---
 title: "New(sletter)"
 date: 2021-12-07
-draft: False
+draft: false
 type: post
+is_newsletter: true
 ---
 
 Hi. Here's some things I've been doing and stuff that's been on my mind:
