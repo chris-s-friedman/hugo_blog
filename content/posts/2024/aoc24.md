@@ -1,7 +1,7 @@
 ---
 title: "Advent of Code 2024 - What I've Learned"
 date: 2024-12-01T10:41:23-05:00
-draft: true
+draft: false
 type: "post"
 slug: "aoc24"
 tags:
