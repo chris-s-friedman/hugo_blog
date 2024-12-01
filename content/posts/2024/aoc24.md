@@ -14,7 +14,7 @@ It's once again December which, as a developer can mean only one thing: it's tim
 
 My goal with this blog post is to update it after completing an Advent of Code puzzle with what I've learned while completing the puzzle. I'll update this post each day with something new, so make sure to check back!
 
-Just a note, I primarily develop in python, so my discussions will likely revolve around writing python code.
+Just a note, I primarily develop in python, so my discussions will likely revolve around writing python code. I am tracking the work I'm doing for advent of code [here](https://github.com/chris-s-friedman/advent-of-code-2024)
 
 ## Table of Contents
 
