@@ -19,6 +19,7 @@ Just a note, I primarily develop in python, so my discussions will likely revolv
 ## Table of Contents
 
 - [Day 1: `collections.Counter`](#day-1-collectionscounter)
+- [Day 2: naivete is OK](#day-2-naivete-is-ok)
 
 ## Day 1: `collections.Counter`
 
@@ -60,3 +61,15 @@ list2_counter = Counter(list2)
 
 counts = [item * list2_counter[item] for item in list1]
 ```
+
+## Day 2: Naivete is OK
+
+Going to _try_ to keep this short. Today's advent was a reminder that sometimes it makes sense to accept the more naive, less clever, less thinks-through-every-case-possible-in-the-universe solution in favor of just looping through your list and getting your job done. 
+
+Today's advent challenged me to find sets of numbers in a list of sets where rules were violated and then, in part two of the challenge, allowed up to one item to be removed from each set if removing that item will make the set not violate the rules. This second part of the task had me thinking for most of my morning. I ended up writing a 100+ line function with multiple sub-functions called within it, with a complicated returned tuple that provided information about where and how a set failed or didn't fail to follow the rules.
+
+I would run my script, submit an answer, be told it was wrong, write code to handle _some_ edge case, resubmit, make changes, run, resubmit, change, run, resubmit... and on and on.
+
+All of this was to avoid what I thought would be the slower, more naive, simple solution: loop through each item in every failing set and see if removing an item makes the set not fail. This solution is probably slower but it's much easier to understand, essentially self-documenting and.... works. Also, how much does speed really matter on a list of 1000 sets (answer: not much)?
+
+So, today's lesson learned: just write the damn solution if the "clever" solution is not much of a solution.
