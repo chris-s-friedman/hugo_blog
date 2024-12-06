@@ -83,3 +83,10 @@ Today is time for some regex-fu. Today I learned two things... and I don't have 
 2. To select text between two sets of characters, don't dorget to put the text you're looking to extract in parentheses!
 
 That's it! Easy day and looking forward to tomorrow!
+
+## Day 4: It's kind of a matrix
+
+Ok it's not a matrix today but it was a fun puzzle of trying to find words in a cross-word style matrix of letters. I will say, the vast majority of this solution is cribbed from [Geeks for Geeks](https://www.geeksforgeeks.org/search-a-word-in-a-2d-grid-of-characters/).
+
+The thing I've learned today - besides to not be afraid of matrices, because this one wasn't bad - was that you don't learn as much when you just re-use someone else's code.
+
