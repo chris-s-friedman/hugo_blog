@@ -59,7 +59,7 @@ name = "Resume"
 url = "https://cv.chris-s-friedman.com/files/Friedman_Resume.pdf"
 
 [params]
-description = "Chris Friedman's Blog"
+description = "Usually writing about data, sometimes about mistakes, and occasionally about other things."
 favicon = "https://res.cloudinary.com/chrissfriedman/image/upload/v1512174331/favicon_j0grb0.ico"
 showPostsOnHomePage = "recent"
 accentColor = "#73d2de"
